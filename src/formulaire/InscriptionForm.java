@@ -1,5 +1,6 @@
 package formulaire;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class InscriptionForm {
         String email = request.getParameter( ParametresFormulaire.EMAIL );
         String motdepasse = request.getParameter( ParametresFormulaire.MOTDEPASSE );
         String confirmationmotdepasse = request.getParameter( ParametresFormulaire.CONFIRMATIONMOTDEPASSE );
-
+        Timestamp dateCreation = new Timestamp( System.currentTimeMillis() );
         Utilisateur utilisateur = new Utilisateur();
         try {
 
@@ -44,10 +45,11 @@ public class InscriptionForm {
 
             verifierMotDePasse( motdepasse );
             affecterConfirmationMotDePasse( motdepasse, confirmationmotdepasse, utilisateur );
+            affecterDate( dateCreation, utilisateur );
 
             if ( erreurs.isEmpty() ) {
                 creationAutorisee = MessagesSucces.UTILISATEUR_CREE;
-                utilisateurDao.creerUtilisateur( utilisateur );
+                utilisateurDao.creer( utilisateur );
                 System.out.println( creationAutorisee );
             } else {
                 creationAutorisee = MessagesErreur.CREATION_UTILISATEUR_KO;
@@ -64,6 +66,11 @@ public class InscriptionForm {
         }
 
         return utilisateur;
+    }
+
+    private void affecterDate( Timestamp dateCreation, Utilisateur utilisateur ) {
+        utilisateur.setDate_creation( dateCreation );
+
     }
 
     public void affecterLogin( String login, Utilisateur utilisateur ) {
@@ -109,7 +116,7 @@ public class InscriptionForm {
                             e.getMessage() );
                 }
             }
-        } else if ( utilisateurDao.rechercherUtilisateur( email ) != null ) {
+        } else if ( utilisateurDao.trouver( email ) != null ) {
             try {
                 throw ( new FormValidationException( MessagesErreur.EMAIL_DEJA_PRIS ) );
             } catch ( FormValidationException e ) {
